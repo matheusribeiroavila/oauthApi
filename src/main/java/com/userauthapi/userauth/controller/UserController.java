@@ -2,6 +2,7 @@ package com.userauthapi.userauth.controller;
 
 import com.userauthapi.userauth.dto.UserDto;
 import com.userauthapi.userauth.model.User;
+import com.userauthapi.userauth.security.MyToken;
 import com.userauthapi.userauth.service.IUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,11 @@ public class UserController {
     @PostMapping("/user")
     public ResponseEntity<User> createNewUser(@RequestBody UserDto dto){
         return ResponseEntity.status(201).body(userService.createNewUser(dto));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<MyToken> loging(@RequestBody UserDto user){
+        return ResponseEntity.ok(userService.userLogin(user));
     }
 
 }

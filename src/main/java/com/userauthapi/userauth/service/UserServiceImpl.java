@@ -2,8 +2,11 @@ package com.userauthapi.userauth.service;
 
 import com.userauthapi.userauth.dto.UserDto;
 import com.userauthapi.userauth.exception.NotFoundException;
+import com.userauthapi.userauth.exception.UnauthorizedUserException;
 import com.userauthapi.userauth.model.User;
 import com.userauthapi.userauth.repository.UserRepository;
+import com.userauthapi.userauth.security.MyToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,10 +38,25 @@ public class UserServiceImpl implements IUserService{
     @Override
     public User createNewUser(UserDto user) {
         User userTarget = new User();
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
 
         userTarget.setUsername(user.username());
-        userTarget.setPassword(user.password());
+        userTarget.setPassword(encoder.encode(user.password()));
 
         return userRepository.save(userTarget);
+    }
+
+    @Override
+    public MyToken userLogin(UserDto user) {
+        User storedUser = userRepository.findByUsername(user.username()).orElseThrow(() -> new UnauthorizedUserException("Unauthorized access, user not found."));
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        if(encoder.matches(user.password(), storedUser.getPassword())){
+            return new MyToken("security123");
+        }
+
+        throw new UnauthorizedUserException("Unauthorized access");
     }
 }
